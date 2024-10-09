@@ -1,8 +1,13 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
-const EditCustomer = () => {
+import {
+  editCustomerExpress,
+  editCustomerNest,
+  getCustomerByIdExpress,
+  getCustomerByIdNest,
+} from "../../api/ApiCustomer";
+const EditCustomer = ({ backend }) => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -11,16 +16,15 @@ const EditCustomer = () => {
 
   useEffect(() => {
     getCustomerById();
-  }, []);
+  }, [backend]);
 
   const updateCustomer = async (e) => {
     e.preventDefault();
     try {
-      await axios.patch(`http://localhost:5000/customers/${id}`, {
-        name,
-        phone,
-        address,
-      });
+      const customerData = { name, phone, address };
+      await (backend === "express"
+        ? editCustomerExpress(customerData)
+        : editCustomerNest(customerData));
       navigate("/");
     } catch (error) {
       console.log(error);
@@ -28,10 +32,12 @@ const EditCustomer = () => {
   };
 
   const getCustomerById = async () => {
-    const response = await axios.get(`http://localhost:5000/customers/${id}`);
-    setName(response.data.data.name);
-    setPhone(response.data.data.phone);
-    setAddress(response.data.data.address);
+    const response = await (backend === "express"
+      ? getCustomerByIdExpress(id)
+      : getCustomerByIdNest(id));
+    setName(response.name);
+    setPhone(response.phone);
+    setAddress(response.address);
   };
 
   return (

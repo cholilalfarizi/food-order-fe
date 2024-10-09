@@ -1,8 +1,9 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { addFoodExpress, addFoodNest } from "../../api/ApiFood";
 
-const AddFood = () => {
+const AddFood = ({ backend }) => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
@@ -11,12 +12,11 @@ const AddFood = () => {
   const saveFood = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/foods", {
-        name,
-        price,
-        stock,
-      });
-      navigate("/");
+      const foodData = { name, price, stock };
+      await (backend === "express"
+        ? addFoodExpress(foodData)
+        : addFoodNest(foodData));
+      navigate("/food");
     } catch (error) {
       console.log(error);
     }

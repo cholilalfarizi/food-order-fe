@@ -1,8 +1,9 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { addCustomerExpress, addCustomerNest } from "../../api/ApiCustomer";
 
-const AddCustomer = () => {
+const AddCustomer = ({ backend }) => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -11,11 +12,10 @@ const AddCustomer = () => {
   const saveCustomer = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/customers", {
-        name,
-        phone,
-        address,
-      });
+      const customerData = { name, phone, address };
+      await (backend === "express"
+        ? addCustomerExpress(customerData)
+        : addCustomerNest(customerData)); // Panggil fungsi dari api.js
       navigate("/");
     } catch (error) {
       console.log(error);

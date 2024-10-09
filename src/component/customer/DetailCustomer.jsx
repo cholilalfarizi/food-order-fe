@@ -1,6 +1,46 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import {
+  getCustomerByIdExpress,
+  getCustomerByIdNest,
+} from "../../api/ApiCustomer";
 
-const DetailCustomer = ({ customer, closeModal }) => {
+const DetailCustomer = ({ id, closeModal, backend }) => {
+  const [customer, setCustomer] = useState(null); // Set to null initially
+  console.log("ID: ", id);
+  useEffect(() => {
+    getCustomer(id);
+  }, [id]);
+
+  const getCustomer = async (id) => {
+    const response =
+      backend === "express"
+        ? await getCustomerByIdExpress(id)
+        : await getCustomerByIdNest(id);
+
+    setCustomer(response);
+  };
+
+  console.log("ID: ", id);
+
+  if (!customer) {
+    // Display a loading message or an empty div while waiting for the data
+    return (
+      <div className={`modal is-active`}>
+        <div className="modal-background" onClick={closeModal}></div>
+        <div className="modal-card">
+          <header className="modal-card-head">
+            <p className="modal-card-title">Loading...</p>
+            <button
+              className="delete"
+              aria-label="close"
+              onClick={closeModal}
+            ></button>
+          </header>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`modal is-active`}>
       <div className="modal-background" onClick={closeModal}></div>

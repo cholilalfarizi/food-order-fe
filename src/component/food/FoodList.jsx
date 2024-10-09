@@ -2,33 +2,41 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import DetailFood from "./DetailFood";
+import {
+  deleteFoodExpress,
+  deleteFoodNest,
+  getFoodsExpress,
+  getFoodsNest,
+} from "../../api/ApiFood";
 
-const FoodList = () => {
+const FoodList = ({ backend }) => {
   const [foods, setFoods] = useState([]);
   const [selectedFood, setSelectedFood] = useState(null);
   const [isModalActive, setIsModalActive] = useState(false);
-  const baseUrl = "http://localhost:5000/foods";
+
   useEffect(() => {
     getFood();
-  }, []);
+  }, [backend]);
 
   const getFood = async () => {
-    const response = await axios.get(baseUrl);
-    // console.log(response.data.data);
-    setFoods(response.data.data);
+    const response =
+      backend === "express" ? await getFoodsExpress() : await getFoodsNest();
+    setFoods(response);
   };
 
   const deleteFood = async (id) => {
     try {
-      await axios.delete(`${baseUrl}/${id}`);
+      await (backend === "express"
+        ? deleteFoodExpress(id)
+        : deleteFoodNest(id));
       getFood();
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleDetailClick = (food) => {
-    setSelectedFood(food); // Set the food to display in the modal
+  const handleDetailClick = (id) => {
+    setSelectedFood(id); // Set the food to display in the modal
     setIsModalActive(true); // Open the modal
   };
 
@@ -64,7 +72,7 @@ const FoodList = () => {
                 <td>
                   <button
                     className="button is-small is-info"
-                    onClick={() => handleDetailClick(food)}
+                    onClick={() => handleDetailClick(food.food_id)}
                   >
                     Detail
                   </button>
@@ -86,7 +94,11 @@ const FoodList = () => {
           </tbody>
         </table>
         {isModalActive && selectedFood && (
-          <DetailFood food={selectedFood} closeModal={closeModal} />
+          <DetailFood
+            id={selectedFood}
+            closeModal={closeModal}
+            backend={backend}
+          />
         )}
       </div>
     </div>

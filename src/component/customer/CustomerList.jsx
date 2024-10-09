@@ -2,25 +2,38 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import DetailCustomer from "./DetailCustomer";
+import {
+  getCustomersExpress,
+  getCustomersNest,
+  deleteCustomerExpress,
+  deleteCustomerNest,
+} from "../../api/ApiCustomer";
 
-const CustomerList = () => {
+const CustomerList = ({ backend }) => {
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [isModalActive, setIsModalActive] = useState(false);
-  const baseUrl = "http://localhost:5000/customers";
 
   useEffect(() => {
     getCustomer();
-  }, []);
+  }, [backend]);
 
   const getCustomer = async () => {
-    const response = await axios.get(baseUrl);
-    setCustomers(response.data.data);
+    const response =
+      backend === "express"
+        ? await getCustomersExpress()
+        : await getCustomersNest();
+    setCustomers(response);
   };
+
+  console.log(customers);
+  console.log("backend: ", backend);
 
   const deleteCustomer = async (id) => {
     try {
-      await axios.delete(`${baseUrl}/${id}`);
+      await (backend === "express"
+        ? deleteCustomerExpress(id)
+        : deleteCustomerNest(id));
       getCustomer();
     } catch (error) {
       console.log(error);
@@ -28,8 +41,8 @@ const CustomerList = () => {
   };
 
   // Function to open the modal with the selected customer's details
-  const handleDetailClick = (customer) => {
-    setSelectedCustomer(customer); // Set the customer to display in the modal
+  const handleDetailClick = (id) => {
+    setSelectedCustomer(id); // Set the customer to display in the modal
     setIsModalActive(true); // Open the modal
   };
 
@@ -65,7 +78,7 @@ const CustomerList = () => {
                 <td>
                   <button
                     className="button is-small is-info"
-                    onClick={() => handleDetailClick(customer)}
+                    onClick={() => handleDetailClick(customer.customer_id)}
                   >
                     Detail
                   </button>
@@ -89,7 +102,11 @@ const CustomerList = () => {
 
         {/* Render the modal */}
         {isModalActive && selectedCustomer && (
-          <DetailCustomer customer={selectedCustomer} closeModal={closeModal} />
+          <DetailCustomer
+            id={selectedCustomer}
+            closeModal={closeModal}
+            backend={backend}
+          />
         )}
       </div>
     </div>

@@ -1,8 +1,14 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import {
+  editFoodExpress,
+  editFoodNest,
+  getFoodByIdExpress,
+  getFoodByIdNest,
+} from "../../api/ApiFood";
 
-const EditFood = () => {
+const EditFood = ({ backend }) => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
@@ -11,27 +17,28 @@ const EditFood = () => {
 
   useEffect(() => {
     getFoodById();
-  }, []);
+  }, [backend]);
 
   const updateFood = async (e) => {
     e.preventDefault();
     try {
-      await axios.patch(`http://localhost:5000/foods/${id}`, {
-        name,
-        price,
-        stock,
-      });
-      navigate("/");
+      const foodData = { name, price, stock };
+      await (backend === "express"
+        ? editFoodExpress(foodData, id)
+        : editFoodNest(foodData, id));
+      navigate("/food");
     } catch (error) {
       console.log(error);
     }
   };
 
   const getFoodById = async () => {
-    const response = await axios.get(`http://localhost:5000/foods/${id}`);
-    setName(response.data.data.name);
-    setPrice(response.data.data.price);
-    setStock(response.data.data.stock);
+    const response = await (backend === "express"
+      ? getFoodByIdExpress(id)
+      : getFoodByIdNest(id));
+    setName(response.name);
+    setPrice(response.price);
+    setStock(response.stock);
   };
 
   return (
