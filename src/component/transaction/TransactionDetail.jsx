@@ -1,7 +1,11 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
+import {
+  getTransactionByIdExpress,
+  getTransactionByIdNest,
+} from "../../api/ApiTransaction";
 
-const DetailTransaction = ({ id, closeModal }) => {
+const DetailTransaction = ({ id, closeModal, backend }) => {
   const [transaction, setTransaction] = useState(null); // Set to null initially
   const baseUrl = "http://localhost:5000/transactions";
 
@@ -11,8 +15,11 @@ const DetailTransaction = ({ id, closeModal }) => {
 
   const getTransaction = async (id) => {
     try {
-      const response = await axios.get(`${baseUrl}/${id}`);
-      setTransaction(response.data.data);
+      const response =
+        backend === "express"
+          ? await getTransactionByIdExpress(id)
+          : await getTransactionByIdNest(id);
+      setTransaction(response);
     } catch (error) {
       console.log(error);
     }

@@ -2,8 +2,14 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import DetailTransaction from "./TransactionDetail";
+import {
+  deleteTransactionExpress,
+  deleteTransactionNest,
+  getTransactionsExpress,
+  getTransactionsNest,
+} from "../../api/ApiTransaction";
 
-const TransactionList = () => {
+const TransactionList = ({ backend }) => {
   const [transactions, setTransactions] = useState([]);
   const [isModalActive, setIsModalActive] = useState(false);
   const [selectedTransactionId, setSelectedTransactionId] = useState(null); // State for selected transaction ID
@@ -11,12 +17,15 @@ const TransactionList = () => {
 
   useEffect(() => {
     getTransaction();
-  }, []);
+  }, [backend]);
 
   const getTransaction = async () => {
     try {
-      const response = await axios.get(baseUrl);
-      setTransactions(response.data.data);
+      const response =
+        backend === "express"
+          ? await getTransactionsExpress()
+          : await getTransactionsNest();
+      setTransactions(response);
     } catch (error) {
       console.log(error);
     }
@@ -24,7 +33,9 @@ const TransactionList = () => {
 
   const deleteTransaction = async (id) => {
     try {
-      await axios.delete(`${baseUrl}/${id}`);
+      await (backend === "express"
+        ? deleteTransactionExpress(id)
+        : deleteTransactionNest(id));
       getTransaction();
     } catch (error) {
       console.log(error);
@@ -102,6 +113,7 @@ const TransactionList = () => {
           <DetailTransaction
             id={selectedTransactionId}
             closeModal={closeModal}
+            backend={backend}
           />
         )}
       </div>

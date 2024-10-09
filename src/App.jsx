@@ -37,9 +37,18 @@ function App() {
             path="/food/edit/:id"
             element={<EditFood backend={backend} />}
           />
-          <Route path="/transaction" element={<TransactionList />} />
-          <Route path="/transaction/add" element={<AddTransaction />} />
-          <Route path="/transaction/edit/:id" element={<EditTransaction />} />
+          <Route
+            path="/transaction"
+            element={<TransactionList backend={backend} />}
+          />
+          <Route
+            path="/transaction/add"
+            element={<AddTransaction backend={backend} />}
+          />
+          <Route
+            path="/transaction/edit/:id"
+            element={<EditTransaction backend={backend} />}
+          />
         </Routes>
       </BrowserRouter>
     </>

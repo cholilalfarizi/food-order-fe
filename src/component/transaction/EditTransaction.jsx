@@ -1,48 +1,47 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
+import {
+  editTransactionExpress,
+  editTransactionNest,
+  getTransactionByIdExpress,
+  getTransactionByIdNest,
+} from "../../api/ApiTransaction";
+import { getFoodsExpress, getFoodsNest } from "../../api/ApiFood";
 
-const EditTransaction = () => {
+const EditTransaction = ({ backend }) => {
   const [transaction, setTransaction] = useState(null);
   const [foods, setFoods] = useState([]);
-  const [customers, setCustomers] = useState([]);
   const [foodItems, setFoodItems] = useState([]);
   const { id } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
     getFoods();
-    getCustomers();
     getTransaction();
-  }, []);
+  }, [backend]);
 
   const getFoods = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/foods");
-      setFoods(response.data.data);
+      const response =
+        backend === "express" ? await getFoodsExpress() : await getFoodsNest();
+      setFoods(response);
     } catch (error) {
       console.error("Error fetching foods:", error);
     }
   };
 
-  const getCustomers = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/customers");
-      setCustomers(response.data.data);
-    } catch (error) {
-      console.error("Error fetching customers:", error);
-    }
-  };
-
   const getTransaction = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/transactions/${id}`
-      );
-      setTransaction(response.data.data);
+      const response =
+        backend === "express"
+          ? await getTransactionByIdExpress(id)
+          : await getTransactionByIdNest(id);
+      setTransaction(response);
+      console.log("ini response", response);
       setFoodItems(
-        response.data.data.transaction_details.map((detail) => ({
-          food_id: detail.food_id,
+        response.transaction_details.map((detail) => ({
+          food_id: detail.food.food_id,
           qty: detail.qty,
         }))
       );
@@ -50,6 +49,8 @@ const EditTransaction = () => {
       console.error("Error fetching transaction:", error);
     }
   };
+
+  console.log("makanannya", foodItems);
 
   const handleFoodSelection = (foodId) => {
     setFoodItems((prevItems) => {
@@ -88,7 +89,9 @@ const EditTransaction = () => {
     };
 
     try {
-      await axios.patch(`http://localhost:5000/transactions/${id}`, orderData);
+      await (backend === "express"
+        ? editTransactionExpress(orderData)
+        : editTransactionNest(orderData));
       alert("Transaction updated successfully!");
       navigate("/transaction");
     } catch (error) {
@@ -104,21 +107,6 @@ const EditTransaction = () => {
   return (
     <div className="container mt-5">
       <h1 className="title">Edit Transaction</h1>
-
-      <div className="field">
-        <label className="label">Customer</label>
-        <div className="control">
-          <input
-            className="input"
-            type="text"
-            value={
-              customers.find((c) => c.customer_id === transaction.customer_id)
-                ?.name || ""
-            }
-            disabled
-          />
-        </div>
-      </div>
 
       <table className="table is-fullwidth">
         <thead>

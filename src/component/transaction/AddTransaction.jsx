@@ -1,22 +1,30 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getFoodsExpress, getFoodsNest } from "../../api/ApiFood";
+import { getCustomersExpress, getCustomersNest } from "../../api/ApiCustomer";
+import {
+  addTransactionExpress,
+  addTransactionNest,
+} from "../../api/ApiTransaction";
 
-const AddTransaction = () => {
+const AddTransaction = ({ backend }) => {
   const [foods, setFoods] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [foodItems, setFoodItems] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     getFoods();
     getCustomers();
-  }, []);
+  }, [backend]);
 
   const getFoods = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/foods");
-      setFoods(response.data.data);
+      const response =
+        backend === "express" ? await getFoodsExpress() : await getFoodsNest();
+      setFoods(response);
     } catch (error) {
       console.error("Error fetching foods:", error);
     }
@@ -24,8 +32,11 @@ const AddTransaction = () => {
 
   const getCustomers = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/customers");
-      setCustomers(response.data.data);
+      const response =
+        backend === "express"
+          ? await getCustomersExpress()
+          : await getCustomersNest();
+      setCustomers(response);
     } catch (error) {
       console.error("Error fetching customers:", error);
     }
@@ -66,10 +77,13 @@ const AddTransaction = () => {
     };
 
     try {
-      await axios.post("http://localhost:5000/transactions", orderData);
+      await (backend === "express"
+        ? addTransactionExpress(orderData)
+        : addTransactionNest(orderData));
       alert("Order submitted successfully!");
       setSelectedCustomer("");
       setFoodItems([]);
+      navigate("/transaction");
     } catch (error) {
       console.error("Error submitting order:", error);
       alert(error.response.data.message);
